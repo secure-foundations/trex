@@ -1,0 +1,77 @@
+PROGRAM
+name test-linked-list.nodebug
+big_endian false
+
+ADDRESS_SPACES
+	433 ram 8
+	183 OTHER 8
+	695 .shstrtab 8
+	823 .strtab 8
+	951 .symtab 8
+	1079 .rela.eh_frame 8
+	1207 .comment 8
+	1335 _elfHeader 8
+	1463 _elfSectionHeaders 8
+
+PCODE_LISTING
+	00100000 getlast
+		Unaffected: (register, 0x18, 8) (register, 0x20, 8) (register, 0x28, 8) (register, 0xa0, 8) (register, 0xa8, 8) (register, 0xb0, 8) (register, 0xb8, 8) 
+		00100000 (unique, 0xe780, 8) COPY (register, 0x28, 8)
+		00100000 (register, 0x20, 8) INT_SUB (register, 0x20, 8) , (const, 0x8, 8)
+		00100000  ---  STORE (const, 0x1b1, 8) , (register, 0x20, 8) , (unique, 0xe780, 8)
+		00100001 (register, 0x28, 8) COPY (register, 0x20, 8)
+		00100004 (unique, 0x3100, 8) INT_ADD (register, 0x28, 8) , (const, 0xffffffffffffffe8, 8)
+		00100004 (unique, 0xbd80, 8) COPY (register, 0x38, 8)
+		00100004  ---  STORE (const, 0x1b1, 4) , (unique, 0x3100, 8) , (unique, 0xbd80, 8)
+		00100008 (unique, 0x3100, 8) INT_ADD (register, 0x28, 8) , (const, 0xffffffffffffffe8, 8)
+		00100008 (unique, 0xbd80, 8) LOAD (const, 0x1b1, 4) , (unique, 0x3100, 8)
+		00100008 (register, 0x0, 8) COPY (unique, 0xbd80, 8)
+		0010000c (unique, 0xbd80, 8) LOAD (const, 0x1b1, 4) , (register, 0x0, 8)
+		0010000c (register, 0x0, 8) COPY (unique, 0xbd80, 8)
+		0010000f (unique, 0x3100, 8) INT_ADD (register, 0x28, 8) , (const, 0xfffffffffffffff8, 8)
+		0010000f (unique, 0xbd80, 8) COPY (register, 0x0, 8)
+		0010000f  ---  STORE (const, 0x1b1, 4) , (unique, 0x3100, 8) , (unique, 0xbd80, 8)
+		00100013  ---  BRANCH (ram, 0x100028, 8)
+		00100015 (unique, 0x3100, 8) INT_ADD (register, 0x28, 8) , (const, 0xfffffffffffffff8, 8)
+		00100015 (unique, 0xbd80, 8) LOAD (const, 0x1b1, 4) , (unique, 0x3100, 8)
+		00100015 (register, 0x0, 8) COPY (unique, 0xbd80, 8)
+		00100019 (unique, 0x3100, 8) INT_ADD (register, 0x28, 8) , (const, 0xffffffffffffffe8, 8)
+		00100019 (unique, 0xbd80, 8) COPY (register, 0x0, 8)
+		00100019  ---  STORE (const, 0x1b1, 4) , (unique, 0x3100, 8) , (unique, 0xbd80, 8)
+		0010001d (unique, 0x3100, 8) INT_ADD (register, 0x28, 8) , (const, 0xffffffffffffffe8, 8)
+		0010001d (unique, 0xbd80, 8) LOAD (const, 0x1b1, 4) , (unique, 0x3100, 8)
+		0010001d (register, 0x0, 8) COPY (unique, 0xbd80, 8)
+		00100021 (unique, 0xbd80, 8) LOAD (const, 0x1b1, 4) , (register, 0x0, 8)
+		00100021 (register, 0x0, 8) COPY (unique, 0xbd80, 8)
+		00100024 (unique, 0x3100, 8) INT_ADD (register, 0x28, 8) , (const, 0xfffffffffffffff8, 8)
+		00100024 (unique, 0xbd80, 8) COPY (register, 0x0, 8)
+		00100024  ---  STORE (const, 0x1b1, 4) , (unique, 0x3100, 8) , (unique, 0xbd80, 8)
+		00100028 (unique, 0x3100, 8) INT_ADD (register, 0x28, 8) , (const, 0xfffffffffffffff8, 8)
+		00100028 (unique, 0xbe00, 8) LOAD (const, 0x1b1, 4) , (unique, 0x3100, 8)
+		00100028 (register, 0x200, 1) INT_LESS (unique, 0xbe00, 8) , (const, 0x0, 8)
+		00100028 (unique, 0xbe00, 8) LOAD (const, 0x1b1, 4) , (unique, 0x3100, 8)
+		00100028 (register, 0x20b, 1) INT_SBORROW (unique, 0xbe00, 8) , (const, 0x0, 8)
+		00100028 (unique, 0xbe00, 8) LOAD (const, 0x1b1, 4) , (unique, 0x3100, 8)
+		00100028 (unique, 0x28300, 8) INT_SUB (unique, 0xbe00, 8) , (const, 0x0, 8)
+		00100028 (register, 0x207, 1) INT_SLESS (unique, 0x28300, 8) , (const, 0x0, 8)
+		00100028 (register, 0x206, 1) INT_EQUAL (unique, 0x28300, 8) , (const, 0x0, 8)
+		00100028 (unique, 0x12c00, 8) INT_AND (unique, 0x28300, 8) , (const, 0xff, 8)
+		00100028 (unique, 0x12c80, 1) POPCOUNT (unique, 0x12c00, 8)
+		00100028 (unique, 0x12d00, 1) INT_AND (unique, 0x12c80, 1) , (const, 0x1, 1)
+		00100028 (register, 0x202, 1) INT_EQUAL (unique, 0x12d00, 1) , (const, 0x0, 1)
+		0010002d (unique, 0xc680, 1) BOOL_NEGATE (register, 0x206, 1)
+		0010002d  ---  CBRANCH (ram, 0x100015, 8) , (unique, 0xc680, 1)
+		0010002f (unique, 0x3100, 8) INT_ADD (register, 0x28, 8) , (const, 0xffffffffffffffe8, 8)
+		0010002f (unique, 0xbd80, 8) LOAD (const, 0x1b1, 4) , (unique, 0x3100, 8)
+		0010002f (register, 0x0, 8) COPY (unique, 0xbd80, 8)
+		00100033 (unique, 0x3100, 8) INT_ADD (register, 0x0, 8) , (const, 0x8, 8)
+		00100033 (unique, 0xbc80, 4) LOAD (const, 0x1b1, 4) , (unique, 0x3100, 8)
+		00100033 (register, 0x0, 4) COPY (unique, 0xbc80, 4)
+		00100033 (register, 0x0, 8) INT_ZEXT (register, 0x0, 4)
+		00100036 (register, 0x28, 8) LOAD (const, 0x1b1, 8) , (register, 0x20, 8)
+		00100036 (register, 0x20, 8) INT_ADD (register, 0x20, 8) , (const, 0x8, 8)
+		00100037 (register, 0x288, 8) LOAD (const, 0x1b1, 8) , (register, 0x20, 8)
+		00100037 (register, 0x20, 8) INT_ADD (register, 0x20, 8) , (const, 0x8, 8)
+		00100037  ---  RETURN (register, 0x288, 8)
+
+

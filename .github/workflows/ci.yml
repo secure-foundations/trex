@@ -1,0 +1,37 @@
+name: CI
+
+on: [push, pull_request, workflow_dispatch]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build_and_test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: -Dwarnings
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+      - name: Set up Rust
+        run: |
+          rustup toolchain install stable --profile minimal --no-self-update --component rustfmt
+      - name: Set up Nextest
+        run: |
+          curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: trex
+      - run: ../.github/tools/github_actions_run_cargo fmt
+        working-directory: ./trex
+      - run: ../.github/tools/github_actions_run_cargo build
+        working-directory: ./trex
+      - run: ../.github/tools/github_actions_run_cargo nextest
+        working-directory: ./trex
+      - run: |
+          ../.github/tools/github_actions_run_cargo test --doc
+          # We need to run `cargo test --doc` separately because doc tests
+          # aren't included in nextest at the moment. See relevant discussion at
+          # https://github.com/nextest-rs/nextest/issues/16
+        working-directory: ./trex

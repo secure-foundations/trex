@@ -1,0 +1,30 @@
+GHIDRA_HOME := env_var_or_default('GHIDRA_HOME', '/opt/ghidra')
+GHIDRA_HEADLESS := 'JAVA_TOOL_OPTIONS="-Dapple.awt.UIElement=true" ' + GHIDRA_HOME + '/support/launch.sh fg jre Ghidra-Headless 8G "-XX:ParallelGCThreads=1 -XX:CICompilerCount=2" ghidra.app.util.headless.AnalyzeHeadless'
+GHIDRA_PROJECT_NAME := 'temp-ghidra-project-' + uuid()
+GHIDRA_RUN := GHIDRA_HEADLESS + ' /tmp ' + GHIDRA_PROJECT_NAME
+
+# Print available recipes; run by default if no command specified
+help:
+    @just --list --unsorted
+
+# Ensure Ghidra exists and works.
+ghidra-test:
+    # Confirming that Ghidra exists and works
+    @{{GHIDRA_HEADLESS}} 2>&1 | grep 'Headless Analyzer Usage: analyzeHeadless' >/dev/null
+    # Confirming that it is the version we expect
+    @grep "^application.version=10.4$" {{GHIDRA_HOME}}/Ghidra/application.properties >/dev/null
+    # Confirmed
+
+# Strip `foo.binar` to produce `foo.ndbg-bin`
+strip-binary foo:
+    llvm-objcopy --strip-debug {{foo}}.binar {{foo}}.ndbg-bin
+
+# Export PCode from `foo.ndbg-bin`
+pcode-export foo:
+    {{GHIDRA_RUN}} -import {{foo}}.ndbg-bin -postScript PCodeExporter.java -scriptPath ghidra_headless_scripts/src/ -readOnly 2>&1 {{ if env_var_or_default("DISABLE_GHIDRA_LOG_FILTERING", "f") != "t" { " | grep PCodeExporter " } else { "" } }}
+    mv {{file_name(foo)}}.ndbg-bin.pcode-exported {{foo}}.lifted
+
+# Extract variables from `foo.binar`
+var-extract foo:
+    {{GHIDRA_RUN}} -import {{foo}}.binar -noanalysis -postScript VariableExporter.java -scriptPath ghidra_headless_scripts/src/ -readOnly 2>&1 {{ if env_var_or_default("DISABLE_GHIDRA_LOG_FILTERING", "f") != "t" { "  | grep VariableExporter " } else { "" } }}
+    mv {{file_name(foo)}}.binar.var-exported {{foo}}.vars

@@ -1,0 +1,34 @@
+[package]
+name = "trex"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "trex"
+path = "src/lib.rs"
+
+[[bin]]
+name = "trex"
+path = "src/main.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+dot = "0.1.4"
+itertools = "0.10.1"
+clap = { version = "3.0.5", features = ["derive"] } # TODO: Can we make this only a dependency of the binary and not the library?
+sloggers = { version = "2.1.1", features = ["json"] }
+slog-scope = "4.4.0"
+slog = { version = "2.7.0", features = ["max_level_trace"] }
+lazy_static = "1.4.0"
+
+# Profiles are specified at the root of the workspace; in this case, ../Cargo.toml
+# [profile.release]
+# debug = true
+
+[features]
+default = ["deterministic_containers"]
+# Forces unordered containers to behave deterministically. While this
+# improves debuggability, it is usually at the cost of some
+# performance penalty.
+deterministic_containers = []

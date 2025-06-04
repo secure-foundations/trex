@@ -1,0 +1,65 @@
+#!/bin/bash
+
+# A script that runs `cargo` commands in a way that makes GitHub actions runners
+# slightly nicer wherever possible. Aim is to also make it easier to run this
+# locally.
+#
+# Author: Jay Bosamiya
+# Version: 0.0.2
+#
+# Usage:
+#   ./github_actions_run_cargo build
+#   ...
+
+set -eo pipefail
+
+function to_gha {
+    jq --raw-output '
+       .message |
+       select(.spans != null) |
+       select(.level == "error" or .level == "warning") |
+       select(.spans[].is_primary == true) |
+       {l:.level,s:.spans[0],m:.message,r:.rendered} |
+       "::\(.l) file=\(.s.file_name),line=\(.s.line_start),endLine=\(.s.line_end),col=\(.s.column_start),endColumn=\(.s.column_end),title=\(.m)::\(.r)" |
+       gsub("\n";"%0A") | gsub("\r";"%0D")
+   '
+}
+
+if [ $# -lt 1 ]; then
+    echo "Usage: $0 {build|check|clippy|fmt} [extra args...]"
+    exit 1
+fi
+
+COMMAND=$1
+shift
+
+case "$COMMAND" in
+build | check | clippy)
+    if ! cargo "$COMMAND" --message-format json --verbose "$@" | to_gha; then
+        echo '::error title='"$COMMAND"' issue::"cargo '"$COMMAND"'" failed'
+        exit 1
+    fi
+    ;;
+fmt)
+    if ! cargo fmt --check --verbose "$@"; then
+        echo '::error title=Formatting issue::"cargo fmt" failed'
+        exit 1
+    fi
+    ;;
+test)
+    if ! cargo test --verbose "$@"; then
+        echo '::error title=Tests failed::"cargo test" failed'
+        exit 1
+    fi
+    ;;
+nextest)
+    if ! cargo nextest run --profile ci --config-file "$(git rev-parse --show-toplevel)/.github/tools/nextest.toml" "$@"; then
+        echo '::error title=Tests failed::"cargo nextest run" failed'
+        exit 1
+    fi
+    ;;
+*)
+    echo "Unsupported command: $COMMAND"
+    exit 1
+    ;;
+esac
