@@ -42,6 +42,29 @@ pub enum Variable {
     ValueIrrelevantConstant,
 }
 
+impl Variable {
+    /// Normalize constants to become position-independent; this is primarily used for Global Value
+    /// Numbering.
+    ///
+    /// NOTE: This does not _fully_ normalize the constant across the program, but instead
+    /// normalizes it to a value within the function that the constant resides in. See the
+    /// implementation for details.
+    pub(crate) fn normalize_program_point_for_const(&self, program: &Program) -> Self {
+        match self {
+            Variable::ConstantValue {
+                progpoint: ProgPoint::Insn(il_ip),
+                input_posn_in_il_insn: _,
+                value,
+            } => Variable::ConstantValue {
+                progpoint: ProgPoint::Insn(program.function_start_il_ip_for_il_ip(*il_ip)),
+                input_posn_in_il_insn: usize::MAX,
+                value: *value,
+            },
+            Variable::Variable { var: _ } | Variable::ValueIrrelevantConstant => self.clone(),
+        }
+    }
+}
+
 impl std::fmt::Debug for Variable {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {

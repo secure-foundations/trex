@@ -35,23 +35,35 @@ impl GlobalValueNumbering {
                 HasNoOutput | MustNotMerge | MightBeMergedInFutureButDoNotMergeNow => {}
                 MergeCopy => r.congruent.merge(
                     Var(ssa.get_output_variable(il_pc)),
-                    Var(ssa.get_input_variable(il_pc, 0)),
+                    Var(ssa
+                        .get_input_variable(il_pc, 0)
+                        .normalize_program_point_for_const(&ssa.program)),
                 ),
                 MergeResultSingleArgument => r.congruent.merge(
                     Var(ssa.get_output_variable(il_pc)),
-                    Op1(op, ssa.get_input_variable(il_pc, 0)),
+                    Op1(
+                        op,
+                        ssa.get_input_variable(il_pc, 0)
+                            .normalize_program_point_for_const(&ssa.program),
+                    ),
                 ),
                 MergeResultButNoCommutativity => r.congruent.merge(
                     Var(ssa.get_output_variable(il_pc)),
                     Op2(
                         op,
-                        ssa.get_input_variable(il_pc, 0),
-                        ssa.get_input_variable(il_pc, 1),
+                        ssa.get_input_variable(il_pc, 0)
+                            .normalize_program_point_for_const(&ssa.program),
+                        ssa.get_input_variable(il_pc, 1)
+                            .normalize_program_point_for_const(&ssa.program),
                     ),
                 ),
                 MergeResultWithCommutativity => {
-                    let a = ssa.get_input_variable(il_pc, 0);
-                    let b = ssa.get_input_variable(il_pc, 0);
+                    let a = ssa
+                        .get_input_variable(il_pc, 0)
+                        .normalize_program_point_for_const(&ssa.program);
+                    let b = ssa
+                        .get_input_variable(il_pc, 1)
+                        .normalize_program_point_for_const(&ssa.program);
                     r.congruent.merge(
                         Var(ssa.get_output_variable(il_pc)),
                         if a <= b { Op2(op, a, b) } else { Op2(op, b, a) },

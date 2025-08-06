@@ -101,16 +101,16 @@ pub fn lift_from(vars_exported: &str, prog: &Rc<Program>) -> ILVariableMap {
             .enumerate()
             .find(|(_, (fn_name, _, _, entry_point))| {
                 if fn_name == func_name {
-                    if *entry_point != func_address {
+                    if entry_point.0 != func_address {
                         debug!(
                             "Differing addresses for same function name found";
                             "fn_name" => fn_name,
-                            "entry_point" => entry_point,
+                            "entry_point" => entry_point.0,
                             "func_address" => func_address,
                         );
                     }
                     true
-                } else if *entry_point == func_address {
+                } else if entry_point.0 == func_address {
                     debug!(
                         "Different function name for same address found";
                         "external_var" => ?external_var,

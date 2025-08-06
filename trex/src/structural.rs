@@ -1297,7 +1297,7 @@ impl StructuralTypes {
             if self.ssa.program.instructions[self
                 .ssa
                 .program
-                .get_il_addrs_for_machine_addr(self.ssa.program.functions[*fnid].3)
+                .get_il_addrs_for_machine_addr(self.ssa.program.functions[*fnid].3 .0)
                 .unwrap()
                 .0]
                 .op

@@ -677,10 +677,16 @@ pub struct Program {
     /// instructions. Basic blocks need not be maximal.
     pub basic_blocks: Vec<Vec<usize>>,
     /// List of functions in the program, where each function is a set of basic block indexes. Each
-    /// function contains exactly one [`Op::FunctionStart`] and one [`Op::FunctionEnd`].  Each
-    /// function also holds on to the list of variables that are unaffected by a call to it,
-    /// and its entry point (as a machine address).
-    pub functions: Vec<(String, UnorderedSet<Variable>, UnorderedSet<usize>, u64)>,
+    /// function contains exactly one [`Op::FunctionStart`] and one [`Op::FunctionEnd`]. Each
+    /// function also holds on to the list of variables that are unaffected by a call to it, and its
+    /// entry point (as a machine address `u64`, as well as an IL PC `usize` pointing at its
+    /// `FunctionStart`).
+    pub functions: Vec<(
+        String,
+        UnorderedSet<Variable>,
+        UnorderedSet<usize>,
+        (u64, usize),
+    )>,
     /// Size of a pointer in this program. Usually would be either 4 or 8, for 32-bit and 64-bit
     /// programs respectively.
     pub pointer_size: usize,
@@ -768,7 +774,7 @@ impl Program {
             f.into(),
             unaffected.into_iter().collect(),
             std::iter::once(fn_start_bb).collect(),
-            entry_point,
+            (entry_point, fn_start),
         ));
     }
 
@@ -882,7 +888,7 @@ impl Program {
         }
 
         // If we are at the function entry point, then set the function start to jump to here
-        if addr == self.functions.last().unwrap().3 {
+        if addr == self.functions.last().unwrap().3 .0 {
             let fn_starts = self
                 .functions
                 .last()
@@ -1714,6 +1720,15 @@ impl Program {
             .expect("should only be called on PCs that exist in some function")
     }
 
+    /// Get the `FunctionStart` IL PC for an arbitrary IL PC. Also see [`function_index_for_il_ip`].
+    pub(crate) fn function_start_il_ip_for_il_ip(&self, il_pc: usize) -> usize {
+        let fn_idx = self.function_index_for_il_ip(il_pc);
+        let (_fnm, _unaff, _bbs, entry) = &self.functions[fn_idx];
+        let func_start_il_pc = entry.1;
+        assert_eq!(self.instructions[func_start_il_pc].op, Op::FunctionStart);
+        func_start_il_pc
+    }
+
     /// Get the unaffected variables for a call to `target`
     pub fn get_unaffected_variables_for_call_to(
         &self,
@@ -1728,7 +1743,7 @@ impl Program {
         let mut found_function = false;
 
         for (_fnm, unaff, _bbs, entry) in &self.functions {
-            if *entry == addr {
+            if entry.0 == addr {
                 result.extend(unaff.iter().cloned());
                 found_function = true;
                 break;

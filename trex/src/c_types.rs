@@ -32,6 +32,10 @@ pub enum BuiltIn {
     SInt128,
     /// Not actually a C-type, but represents an unsigned 128 bit integer
     UInt128,
+    /// Not actually a C-type, but represents a signed 256 bit integer
+    SInt256,
+    /// Not actually a C-type, but represents an unsigned 256 bit integer
+    UInt256,
     Float,
     Double,
     LongDouble,
@@ -72,6 +76,8 @@ impl BuiltIn {
             ULong,
             SInt128,
             UInt128,
+            SInt256,
+            UInt256,
             Float,
             Double,
             LongDouble,
@@ -102,6 +108,8 @@ impl BuiltIn {
             ULong => "uint64_t",
             SInt128 => "int128_t",
             UInt128 => "uint128_t",
+            SInt256 => "int256_t",
+            UInt256 => "uint256_t",
             Float => "float",
             Double => "double",
             LongDouble => "long double",
@@ -159,6 +167,7 @@ fn set_upper_and_copy_size(this: &mut StructuralType, sz: usize) {
         4 => &[1, 2, 4][..],
         8 => &[1, 2, 4, 8][..],
         16 => &[1, 2, 4, 8, 16][..],
+        32 => &[1, 2, 4, 8, 16, 32][..],
         _ => unreachable!("set_upper_and_copy_size(..., {})", sz),
     });
     this.set_upper_bound_size(sz);
@@ -285,7 +294,9 @@ fn update_structural(
             | BuiltIn::Long
             | BuiltIn::ULong
             | BuiltIn::SInt128
-            | BuiltIn::UInt128),
+            | BuiltIn::UInt128
+            | BuiltIn::SInt256
+            | BuiltIn::UInt256),
         ) => {
             let (is_signed, sz) = match t {
                 BuiltIn::ShortShort => (true, 1),
@@ -298,6 +309,8 @@ fn update_structural(
                 BuiltIn::ULong => (false, 8),
                 BuiltIn::SInt128 => (true, 16),
                 BuiltIn::UInt128 => (false, 16),
+                BuiltIn::SInt256 => (true, 32),
+                BuiltIn::UInt256 => (false, 32),
                 _ => unreachable!(),
             };
             set_upper_and_copy_size(this, sz);
@@ -627,10 +640,12 @@ pub fn sign_normalized_c_primitives() -> UnorderedMap<String, String> {
         ("Long", "Long"),
         ("LongDouble", "LongDouble"),
         ("SInt128", "SInt128"),
+        ("SInt256", "SInt256"),
         ("Short", "Short"),
         ("ShortShort", "ShortShort"),
         ("UChar", "Char"),
         ("UInt128", "Int128"),
+        ("UInt256", "Int256"),
         ("ULong", "Long"),
         ("UShort", "Short"),
         ("UShortShort", "ShortShort"),
