@@ -324,7 +324,7 @@ impl SSA {
         &self,
         show_machine_addr: bool,
         highlight_il_addr: Option<usize>,
-    ) -> DebugProgram {
+    ) -> DebugProgram<'_> {
         DebugProgram {
             ssa: self,
             show_machine_addr,
