@@ -1027,6 +1027,70 @@ impl StructuralTypes {
         }
     }
 
+    /// Propagate "is a pointer" bidirectionally through pointer arithmetic operations until
+    /// fixpoint.
+    ///
+    /// If we see `result = base + offset`:
+    /// - Forward: If `base` is a pointer, then `result` is also a pointer
+    /// - Backward: If `result` is a pointer, then `base` is also a pointer
+    ///
+    /// Note: The pointers may point to different types (e.g., for struct field access).
+    pub fn propagate_pointerness_through_arithmetic_constraints(&mut self) {
+        let mut changed = true;
+
+        while changed {
+            changed = false;
+
+            for il_addr in 0..self.ssa.program.instructions.len() {
+                let ins = &self.ssa.program.instructions[il_addr];
+
+                if !matches!(ins.op, crate::il::Op::IntAdd | crate::il::Op::IntSub) {
+                    continue;
+                }
+                let inp0_is_const = matches!(ins.inputs[0], crate::il::Variable::Constant { .. });
+                let inp1_is_const = matches!(ins.inputs[1], crate::il::Variable::Constant { .. });
+                let base_var_input_idx = if inp0_is_const && !inp1_is_const {
+                    1
+                } else if !inp0_is_const && inp1_is_const {
+                    0
+                } else {
+                    continue;
+                };
+                let base_idx = match self
+                    .type_map
+                    .get(&self.ssa.get_input_variable(il_addr, base_var_input_idx))
+                    .copied()
+                {
+                    Some(idx) => idx,
+                    None => continue,
+                };
+                let result_idx = match self.ssa.get_output_impacted_variable(il_addr) {
+                    Some(v) => match self.type_map.get(&v).copied() {
+                        Some(idx) => idx,
+                        None => continue,
+                    },
+                    None => continue,
+                };
+
+                // Forward propagation: base is pointer => result is pointer
+                if self.types.get(base_idx).pointer_to.is_some()
+                    && self.types.get(result_idx).pointer_to.is_none()
+                {
+                    self.types.get_mut(result_idx).pointer_to = Some(self.types.insert_default());
+                    changed = true;
+                }
+
+                // Backward propagation: result is pointer => base is pointer
+                if self.types.get(result_idx).pointer_to.is_some()
+                    && self.types.get(base_idx).pointer_to.is_none()
+                {
+                    self.types.get_mut(base_idx).pointer_to = Some(self.types.insert_default());
+                    changed = true;
+                }
+            }
+        }
+    }
+
     /// Canonicalize the [`Index`]es used to refer to types, while also performing internal garbage
     /// collection. These canonicalized indexes are stabled until further modifications are done to
     /// the contained types, in which case, it might be necessary to re-canonicalize.

@@ -1706,6 +1706,7 @@ impl Program {
                 }
             }
         }
+        types.propagate_pointerness_through_arithmetic_constraints();
         types.canonicalize_indexes();
         types
     }
